@@ -1,4 +1,7 @@
-const Node = require('./avl-node'); 
+//const Node = require('./avl-node'); 
+
+const firstX = window.innerWidth / 2.1; 
+const firstY = 100; 
 
 const AvlTree = function(){
     this.head = null; 
@@ -26,22 +29,27 @@ const AvlTree = function(){
 
 AvlTree.prototype.add = function(value){
     let newNode = new Node(value); 
-
     let current = this.head; 
     let prev = null; 
 
     while(current){
         prev = current; 
         if(value > current.value){
+            //newNode.x = current.x + (300/reducer); 
+            //newNode.y = current.y + 100; 
             current = current.right; 
         }else{
+            //newNode.x = current.x - (300/reducer);
+            //newNode.y = current.y + 100; 
             current = current.left;
         }
     }
 
     if(prev === null){
         this.head = newNode; 
-        return; 
+        this.head.x = firstX; 
+        this.head.y = firstY; 
+        return this.head; 
     }else if(value > prev.value){
         prev.right = newNode; 
         newNode.parent = prev; 
@@ -50,9 +58,12 @@ AvlTree.prototype.add = function(value){
         newNode.parent = prev; 
     }
 
+    this.calculateNodeCoordinates(newNode, leftOrRightChild(newNode)); 
+
     // adjust the heights of the previous nodes  
     this.adjustHeight(newNode); 
     
+    return newNode; 
     //this.rebalance(this.head); 
 
 };
@@ -71,11 +82,11 @@ AvlTree.prototype.adjustHeight = function(startNode){
     }
 }; 
 
-AvlTree.prototype.inOrderTraverse = function(){
-    if(this.head === null) return; 
+AvlTree.prototype.inOrderTraverse = function(root){
+    if(root === null) return; 
 
     let stack = []; 
-    let current = this.head; 
+    let current = root; 
 
     while(stack.length != 0 || current != null){
         if(current){
@@ -89,8 +100,66 @@ AvlTree.prototype.inOrderTraverse = function(){
     }
 };
 
+const leftOrRightChild = (node) => {
+    if(node.parent){
+        if(node.parent.left == node){
+            return 'left';
+        }else{
+            return 'right';
+        }
+    }
+}
+
+AvlTree.prototype.redrawSubTree = function(root){
+    if(root === null) return; 
+
+    let stack = []; 
+    let current = root; 
+
+    while(stack.length != 0 || current != null){
+        if(current){
+            stack.push(current); 
+            clearNode(current); 
+            this.calculateNodeCoordinates(current, leftOrRightChild(current)); 
+            drawNode(current); 
+            current = current.left; 
+        }else{
+            current = stack.pop(); 
+            current = current.right; 
+        }
+    }
+}; 
+
+AvlTree.prototype.calculateNodeCoordinates = function(nodeN, rightOrLeft) {
+    if(nodeN.parent){
+        if(rightOrLeft == 'right'){
+            nodeN.x = nodeN.parent.x + (500 / (getDepth(nodeN))); 
+            nodeN.y = nodeN.parent.y + (300 / (getDepth(nodeN))); 
+        }else{ 
+            nodeN.x = nodeN.parent.x - (500 / (getDepth(nodeN))); 
+            nodeN.y = nodeN.parent.y + (300 / (getDepth(nodeN))); 
+        }
+    }
+}; 
+
+const getDepth = function(node){
+    let count = 0; 
+    while(node){
+        node = node.parent; 
+        count++; 
+    }
+    return count; 
+}
+
 AvlTree.prototype.rotateRight = function(nodeN){
     let nodeC = nodeN.left; 
+
+    clearNode(nodeN); 
+    clearNode(nodeC); 
+    
+    nodeC.x = nodeN.x; 
+    nodeC.y = nodeN.y; 
+    
     if(this.head == nodeN){
         this.head = nodeC;
     }
@@ -115,20 +184,26 @@ AvlTree.prototype.rotateRight = function(nodeN){
     nodeC.height = Math.max( nodeC.left ? nodeC.left.height : -1, nodeC.right ? nodeC.right.height : -1) + 1;
     nodeN.parent = nodeC;  
 
+    this.calculateNodeCoordinates(nodeN, leftOrRightChild(nodeN));
+    drawNode(nodeC); 
+    drawNode(nodeN); 
+
+    this.redrawSubTree(nodeC.left); 
+    
     return nodeC; 
 };
 
-const setParent = function(node){
-    if(node.parent){
-        if(node.parent.left == node){
-
-        }
-    }
-}
 
 AvlTree.prototype.rotateLeft = function(nodeN){
     // grab nodeC as the next root for this subtree
     let nodeC = nodeN.right; 
+
+    clearNode(nodeN); 
+    clearNode(nodeC)
+
+    nodeC.x = nodeN.x; 
+    nodeC.y = nodeN.y; 
+
     if(this.head == nodeN){
         this.head = nodeC;  
     }
@@ -153,6 +228,12 @@ AvlTree.prototype.rotateLeft = function(nodeN){
     //reset the node heights. 
     nodeN.height = Math.max( nodeN.left ? nodeN.left.height : -1, nodeN.right ? nodeN.right.height : -1) + 1;
     nodeC.height = Math.max( nodeC.left ? nodeC.left.height : -1, nodeC.right ? nodeC.right.height : -1) + 1;
+
+    this.calculateNodeCoordinates(nodeN, leftOrRightChild(nodeN));
+    drawNode(nodeC); 
+    drawNode(nodeN);    
+
+    this.redrawSubTree(nodeC.right); 
     return nodeC; 
 };
 
@@ -216,34 +297,34 @@ AvlTree.prototype.rebalance = function(nodeN){
 }; 
 
 
-let myTree = new AvlTree(); 
+// let myTree = new AvlTree(); 
 
-//Test 1
-// passed
-myTree.add(100); 
-myTree.add(90); 
-myTree.add(80);
-
-//Test 2
-//passed 
-// myTree.add(50); 
-// myTree.add(20); 
-// myTree.add(80);
-// myTree.add(60); 
+// //Test 1
+// // passed
+// myTree.add(100); 
 // myTree.add(90); 
-// myTree.add(70);
+// myTree.add(80);
 
-//Test 3
-// myTree.add(869); 
-// myTree.add(714); 
-// myTree.add(874);
-// myTree.add(233); 
-// myTree.add(168); 
-// myTree.add(253);
-// myTree.add(981); 
-// myTree.add(933);
-// myTree.add(273); 
-// myTree.add(368);
-console.log(myTree.head); 
-//myTree.rebalance(myTree.head); 
-//console.log('After rotation...\n', myTree); 
+// //Test 2
+// //passed 
+// // myTree.add(50); 
+// // myTree.add(20); 
+// // myTree.add(80);
+// // myTree.add(60); 
+// // myTree.add(90); 
+// // myTree.add(70);
+
+// //Test 3
+// // myTree.add(869); 
+// // myTree.add(714); 
+// // myTree.add(874);
+// // myTree.add(233); 
+// // myTree.add(168); 
+// // myTree.add(253);
+// // myTree.add(981); 
+// // myTree.add(933);
+// // myTree.add(273); 
+// // myTree.add(368);
+// console.log(myTree.head); 
+// //myTree.rebalance(myTree.head); 
+// //console.log('After rotation...\n', myTree); 
