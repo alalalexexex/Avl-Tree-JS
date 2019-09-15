@@ -16,12 +16,21 @@ const insert = document.getElementById('in-button');
 const inBox = document.getElementById('in-box');
 
 insert.addEventListener('click', (e) => {
+    if(isNaN(Number(inBox.value))){
+        alert('Please enter a number.'); 
+    }else{
+        addToTree(Number(inBox.value));
+    }
     addToTree(Number(inBox.value));      
 }); 
 
 inBox.addEventListener('keyup', (e) => {
     if(e.key === "Enter"){ 
-        addToTree(Number(inBox.value)); 
+        if(isNaN(Number(inBox.value))){
+            alert('Please enter a number.'); 
+        }else{
+            addToTree(Number(inBox.value));
+        }
     }
 }); 
 

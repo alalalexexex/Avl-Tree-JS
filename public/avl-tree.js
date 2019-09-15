@@ -185,10 +185,9 @@ AvlTree.prototype.rotateRight = function(nodeN){
     nodeN.parent = nodeC;  
 
     this.calculateNodeCoordinates(nodeN, leftOrRightChild(nodeN));
-    drawNode(nodeC); 
-    drawNode(nodeN); 
 
-    this.redrawSubTree(nodeC.left); 
+    this.redrawSubTree(nodeC); 
+    this.redrawSubTree(nodeN);  
     
     return nodeC; 
 };
@@ -230,10 +229,9 @@ AvlTree.prototype.rotateLeft = function(nodeN){
     nodeC.height = Math.max( nodeC.left ? nodeC.left.height : -1, nodeC.right ? nodeC.right.height : -1) + 1;
 
     this.calculateNodeCoordinates(nodeN, leftOrRightChild(nodeN));
-    drawNode(nodeC); 
-    drawNode(nodeN);    
 
-    this.redrawSubTree(nodeC.right); 
+    this.redrawSubTree(nodeC); 
+    this.redrawSubTree(nodeN);  
     return nodeC; 
 };
 
